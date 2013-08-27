@@ -256,7 +256,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 		
 		if (_searching) {
 			self.scrollEnabled = NO;
-			_lineView.hidden = NO;
+			_lineView.hidden = !self.lineEnabled;
 			_lineView.backgroundColor = [UIColor colorWithWhite:0.557 alpha:1.000];
 			
 			self.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -341,7 +341,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 	_lineView = [[UIView alloc] init];
 	_lineView.backgroundColor = [UIColor colorWithWhite:0.800 alpha:1.000];
 	_lineView.translatesAutoresizingMaskIntoConstraints = NO;
-  _lineView.hidden = !self.lineEnabled;
+  _lineView.hidden = YES;
 	[_contentView addSubview:_lineView];
 	[_contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_lineView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_lineView)]];
 	
@@ -474,7 +474,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 		[self _scrollToBottom];
 	}
 	
-	if (_textField.isFirstResponder && !self.searching) {
+	if (YES || (_textField.isFirstResponder && !self.searching)) {
 		self.heightConstraint.constant = self.contentSize.height;
 	} else {
 		self.heightConstraint.constant = TURecipientsLineHeight + 1.0;
@@ -519,12 +519,12 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 	}
 	
 	
-	if (_textField.isFirstResponder && self.contentSize.height > self.frame.size.height && !_searching) {
+	if (YES || (_textField.isFirstResponder && self.contentSize.height > self.frame.size.height && !_searching)) {
 		self.scrollEnabled = YES;
-    _lineView.hidden = !self.lineEnabled;
+    _lineView.hidden = YES;
 	} else {
 		self.scrollEnabled = NO;
-		_lineView.hidden = NO;
+		_lineView.hidden = !self.lineEnabled;
 	}
 }
 
@@ -534,12 +534,12 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 		[self _resetLines];
 	}
 	
-	if (_textField.isFirstResponder && self.contentSize.height > self.frame.size.height && !_searching) {
+	if (YES || (_textField.isFirstResponder && self.contentSize.height > self.frame.size.height && !_searching) {
 		self.scrollEnabled = YES;
-    _lineView.hidden = !self.lineEnabled;
+    _lineView.hidden = YES;
 	} else {
 		self.scrollEnabled = NO;
-		_lineView.hidden = NO;
+		_lineView.hidden = !self.lineEnabled;
 	}
 	
 	if (_selectedRecipient == nil
@@ -773,19 +773,19 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
 				self.scrollEnabled = NO;
-				_lineView.hidden = NO;
-				
+				_lineView.hidden = !self.lineEnabled;
+
 				for (UIView *recipientView in _recipientViews) {
 					recipientView.alpha = 0.0;
 				}
 				_textField.alpha = 0.0;
 				_addButton.alpha = 0.0;
-				
+
 				_summaryLabel.alpha = 1.0;
-				
+
 				[self setNeedsUpdateConstraints];
 				[self.superview layoutIfNeeded];
-				
+
 				self.contentOffset = CGPointMake(0.0, 0.0);
 			} completion:^(BOOL finished) {
 				if ([self.recipientsBarDelegate respondsToSelector:@selector(recipientsBarTextDidEndEditing:)]) {
