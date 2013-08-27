@@ -26,6 +26,7 @@
 - (void)removeRecipient:(TURecipient *)recipient;
 @property (nonatomic) BOOL searching;
 - (void)setSearching:(BOOL)searching animated:(BOOL)animated;
+@property (nonatomic) BOOL lineEnabled;
 
 @property (nonatomic) UITextAutocapitalizationType autocapitalizationType __attribute__((deprecated));
 @property (nonatomic) UITextAutocorrectionType autocorrectionType __attribute__((deprecated));

@@ -312,6 +312,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 - (void)_init
 {
     _showsAddButton = YES;
+    _lineEnabled = YES;
     _recipientBackgroundImages = [NSMutableDictionary new];
     _recipientTitleTextAttributes = [NSMutableDictionary new];
     
@@ -340,6 +341,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 	_lineView = [[UIView alloc] init];
 	_lineView.backgroundColor = [UIColor colorWithWhite:0.800 alpha:1.000];
 	_lineView.translatesAutoresizingMaskIntoConstraints = NO;
+  _lineView.hidden = !self.lineEnabled;
 	[_contentView addSubview:_lineView];
 	[_contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[_lineView]|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_lineView)]];
 	
@@ -519,7 +521,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 	
 	if (_textField.isFirstResponder && self.contentSize.height > self.frame.size.height && !_searching) {
 		self.scrollEnabled = YES;
-		_lineView.hidden = YES;
+    _lineView.hidden = !self.lineEnabled;
 	} else {
 		self.scrollEnabled = NO;
 		_lineView.hidden = NO;
@@ -534,7 +536,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 	
 	if (_textField.isFirstResponder && self.contentSize.height > self.frame.size.height && !_searching) {
 		self.scrollEnabled = YES;
-		_lineView.hidden = YES;
+    _lineView.hidden = !self.lineEnabled;
 	} else {
 		self.scrollEnabled = NO;
 		_lineView.hidden = NO;
