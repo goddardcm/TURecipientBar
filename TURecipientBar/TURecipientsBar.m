@@ -94,7 +94,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 	[_contentView addSubview:recipientView];
 	[_recipientViews addObject:recipientView];
     
-    if (!_textField.editing) {
+    if (!_textField.editing && self.showsSummaryLabel) {
         recipientView.alpha = 0.0;
     }
 	
@@ -132,22 +132,24 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 
 - (void)_updateSummary
 {
-    if (_recipients.count > 0) {
-        NSMutableString *summary = [[NSMutableString alloc] init];
-        
-        for (TURecipient *recipient in _recipients) {
-            [summary appendString:recipient.title];
-            
-            if (recipient != [_recipients lastObject]) {
-                [summary appendString:@", "];
+    if (self.showsSummaryLabel) {
+        if (_recipients.count > 0) {
+            NSMutableString *summary = [[NSMutableString alloc] init];
+
+            for (TURecipient *recipient in _recipients) {
+                [summary appendString:recipient.title];
+
+                if (recipient != [_recipients lastObject]) {
+                    [summary appendString:@", "];
+                }
             }
+
+            _summaryLabel.text = summary;
+            _summaryLabel.textColor = [UIColor darkTextColor];
+        } else {
+            _summaryLabel.text = self.placeholder;
+            _summaryLabel.textColor = [UIColor lightGrayColor];
         }
-        
-        _summaryLabel.text = summary;
-        _summaryLabel.textColor = [UIColor darkTextColor];
-    } else {
-        _summaryLabel.text = self.placeholder;
-        _summaryLabel.textColor = [UIColor lightGrayColor];
     }
 }
 
@@ -256,7 +258,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 		
 		if (_searching) {
 			self.scrollEnabled = NO;
-			_lineView.hidden = !self.lineEnabled;
+			_lineView.hidden = !self.showsLineView;
 			_lineView.backgroundColor = [UIColor colorWithWhite:0.557 alpha:1.000];
 			
 			self.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -312,7 +314,8 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 - (void)_init
 {
     _showsAddButton = YES;
-    _lineEnabled = YES;
+    _showsLineView = YES;
+    _showsSummaryLabel = YES;
     _recipientBackgroundImages = [NSMutableDictionary new];
     _recipientTitleTextAttributes = [NSMutableDictionary new];
     
@@ -376,7 +379,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 	
 	[[_recipientLines lastObject] addObject:_textField];
 	
-	
+
 	_summaryLabel = [[UILabel alloc] init];
     _summaryLabel.backgroundColor = [UIColor clearColor];
 	_summaryLabel.font = [UIFont systemFontOfSize:15.0];
@@ -385,6 +388,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 	[_contentView addConstraint:[NSLayoutConstraint constraintWithItem:_summaryLabel attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:_contentView attribute:NSLayoutAttributeTop multiplier:1.0 constant:21.0]];
 	[_contentView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:[_toLabel]-9-[_summaryLabel]-12-|" options:0 metrics:nil views:NSDictionaryOfVariableBindings(_toLabel, _summaryLabel)]];
 	[_summaryLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
+  _summaryLabel.hidden = !self.showsSummaryLabel;
 	
 	
 	[self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(select:)]];
@@ -474,7 +478,7 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 		[self _scrollToBottom];
 	}
 	
-	if (YES || (_textField.isFirstResponder && !self.searching)) {
+	if ((_textField.isFirstResponder && !self.searching) || !self.showsSummaryLabel) {
 		self.heightConstraint.constant = self.contentSize.height;
 	} else {
 		self.heightConstraint.constant = TURecipientsLineHeight + 1.0;
@@ -519,12 +523,12 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 	}
 	
 	
-	if (YES || (_textField.isFirstResponder && self.contentSize.height > self.frame.size.height && !_searching)) {
+	if (_textField.isFirstResponder && self.contentSize.height > self.frame.size.height && !_searching) {
 		self.scrollEnabled = YES;
     _lineView.hidden = YES;
 	} else {
 		self.scrollEnabled = NO;
-		_lineView.hidden = !self.lineEnabled;
+		_lineView.hidden = !self.showsLineView;
 	}
 }
 
@@ -534,12 +538,12 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 		[self _resetLines];
 	}
 	
-	if (YES || (_textField.isFirstResponder && self.contentSize.height > self.frame.size.height && !_searching) {
+	if (_textField.isFirstResponder && self.contentSize.height > self.frame.size.height && !_searching) {
 		self.scrollEnabled = YES;
     _lineView.hidden = YES;
 	} else {
 		self.scrollEnabled = NO;
-		_lineView.hidden = !self.lineEnabled;
+		_lineView.hidden = !self.showsLineView;
 	}
 	
 	if (_selectedRecipient == nil
@@ -773,15 +777,17 @@ void *TURecipientsSelectionContext = &TURecipientsSelectionContext;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[UIView animateWithDuration:0.25 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
 				self.scrollEnabled = NO;
-				_lineView.hidden = !self.lineEnabled;
+				_lineView.hidden = !self.showsLineView;
 
-				for (UIView *recipientView in _recipientViews) {
-					recipientView.alpha = 0.0;
-				}
+        if (self.showsSummaryLabel) {
+          for (UIView *recipientView in _recipientViews) {
+            recipientView.alpha = 0.0;
+          }
+          _summaryLabel.alpha = 1.0;
+        }
+
 				_textField.alpha = 0.0;
 				_addButton.alpha = 0.0;
-
-				_summaryLabel.alpha = 1.0;
 
 				[self setNeedsUpdateConstraints];
 				[self.superview layoutIfNeeded];
